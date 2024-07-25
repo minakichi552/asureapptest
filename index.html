@@ -2,7 +2,7 @@
 <html lang="en" >
 <head>
   <meta charset="UTF-8">
-  <title>ToDoアプリ</title>
+  <title>CodePen - デプロイ用</title>
   <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css'>
 <link rel='stylesheet' href='https://unpkg.com/@mdi/font@6.x/css/materialdesignicons.min.css'>
 <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900'>
@@ -10,69 +10,206 @@
 </head>
 <body>
 <!-- partial:index.partial.html -->
-<!-- Vueで指定された"app"要素、この中でのみVueが有効 -->
 <div id="app">
-  <v-app>
-    <v-content>
-      <v-container>
-        <v-row
-          class="text-h3 mb-3 mt-3"
-          justify="center"
-          >
-          My ToDo App
-        </v-row>
-        <v-row
-          class="mb-3 mt-3"
-          align="center"
-          justify="center"
-          >
-          <v-col 
-            cols="6"            
-            >
+  <v-app id="inspire">
+    <!-- タイトルの表示 -->
+    <v-row class="text-h3 mb-6 mt-6" justify="center">
+      メモページ
+    </v-row>
+ <!-- 新規投稿ボタン -->
+    <v-btn fab dark color="#db7093" class="fixed-btn" @click="openForm">
+      <v-icon>mdi-plus</v-icon>投稿
+    </v-btn>
+    
+    <!-- ヘッダー（検索） -->
+    <v-container fluid>
+      <v-data-iterator
+        :items="items"
+        :items-per-page.sync="itemsPerPage"
+        :page.sync="page"
+        :search="search"
+        :sort-by="sortBy.toLowerCase()"
+        :sort-desc="sortDesc"
+        hide-default-footer
+      >
+        <template v-slot:header>
+          <!--ツールバーデザイン-->
+          <v-toolbar dark color="#db7093" class="mb-1">
+            <!--検索 v-modelで入力された瞬間検索する双方向を実現-->
             <v-text-field
-                  class="ml-6 mr-6"
-                  v-model:value="task"                         
-                  label="タスクを入力"
-                  placeholder="タスクを入力…"
+              v-model="search" 
+              clearable
+              flat
+              solo-inverted
+              hide-details
+              prepend-inner-icon="mdi-magnify"
+              label="Search"
+            ></v-text-field>
+            
+            <!--プルダウン型による表示順番の切り替え設定-->
+            <template v-if="$vuetify.breakpoint.mdAndUp">
+              
+              <!--間をあける-->
+              <v-spacer></v-spacer>
+              
+              <!--プルダウン型による表示順番の切り替えデザイン-->
+              <v-select
+                v-model="sortBy"
+                flat
+                solo-inverted
+                hide-details
+                :items="keys"
+                prepend-inner-icon="mdi-magnify"
+                label="Sort by"
+              ></v-select>
+              
+              <!--間をあける-->
+              <v-spacer></v-spacer>
+              
+              <!--ここからページ切り替えの矢印ボタン機能-->
+              <v-btn-toggle v-model="sortDesc" mandatory>
+                <v-btn large depressed color="#db7093" :value="false">
+                  <v-icon>mdi-arrow-up</v-icon>
+                </v-btn>
+                <v-btn large depressed color="#db7093" :value="true">
+                  <v-icon>mdi-arrow-down</v-icon>
+                </v-btn>
+              </v-btn-toggle>
+            </template>
+            
+          </v-toolbar>
+        </template>
+
+        
+        <!-- カード表示 -->
+        <template v-slot:default="props">
+          <v-row>
+            <v-col
+              v-for="item in props.items" //items配列の中身繰り返し
+              :key="item.name" 
+              cols="12"
+              sm="6"
+              md="4"
+              lg="3"
             >
-          </v-col>
-        </v-row>
-        <v-row
-          class="mb-3 mt-3"
-          align="center"
-          justify="center"
-          >
-          タスク内容：{{ task }}
-          <v-btn v-on:click="addTask"
-               fab
-               dark
-               small               
-               color="indigo"
-               >
-                 <v-icon dark>
-                  mdi-format-list-bulleted-square
-                 </v-icon>
-               </v-btn>
-        </v-row>
-        <v-row
-          class="mb-3 mt-3"
-          justify="center"
-          > 
-          <v-btn v-on:click="clearAll"
-                 
-                 rounded
-                 >全てのToDoをクリア</v-btn>
-        </v-row>
-        <v-row 
-          class="mb-3 mt-3"
-          justify="center"
-          v-for="todo in todoList">
-          {{ todo }}
-        </v-row>
-      </v-container>
-    </v-content>
+              <v-card>
+                <v-card-title class="subheading font-weight-bold">
+                  {{ item.name }}
+                </v-card-title>
+
+                <v-divider></v-divider>
+
+                <v-list dense>
+                  <v-list-item v-for="(key, index) in filteredKeys" :key="index">
+                    <v-list-item-content :class="{ 'pink--text': sortBy === key }">
+                      {{ key }}:
+                    </v-list-item-content>
+                    <v-list-item-content class="align-end" :class="{ 'blue--text': sortBy === key }">
+                      {{ item[key.toLowerCase()] }}
+                    </v-list-item-content>
+                  </v-list-item>
+                </v-list>
+
+                <v-btn color="#ffc0cb" @click="showCustomDesign(item)">使用例をクリック</v-btn>
+                <br><br>
+                <v-btn color="#ffc0cb" @click="editCard(item)">編集</v-btn>
+              </v-card>
+            </v-col>
+          </v-row>
+        </template>
+
+        <!-- フッター表示 -->
+        <template v-slot:footer>
+          <v-row class="mt-2" align="center" justify="center">
+            <span class="grey--text">Items per page</span>
+            <v-menu offset-y>
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn dark text color="#db7093" class="ml-2" v-bind="attrs" v-on="on">
+                  {{ itemsPerPage }}
+                  <v-icon color="#db7093">mdi-chevron-down</v-icon>
+                </v-btn>
+              </template>
+              <v-list>
+                <v-list-item v-for="(number, index) in itemsPerPageArray" :key="index" @click="updateItemsPerPage(number)">
+                  <v-list-item-title>{{ number }}</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+
+            <v-spacer></v-spacer>
+
+            <span class="mr-4 grey--text">
+              Page {{ page }} of {{ numberOfPages }}
+            </span>
+            <v-btn fab dark color="#db7093" class="mr-1" @click="formerPage">
+              <v-icon>mdi-chevron-left</v-icon>
+            </v-btn>
+            <v-btn fab dark color="#db7093" class="ml-1" @click="nextPage">
+              <v-icon>mdi-chevron-right</v-icon>
+            </v-btn>
+          </v-row>
+        </template>
+      </v-data-iterator>
+    </v-container>
+
+    <!-- 使用例を表示するためのダイアログ -->
+    <v-dialog v-model="dialogVisible" max-width="600">
+      <v-card>
+        <v-toolbar color="#db7093" dark>{{ dialogTitle }}</v-toolbar>
+        <v-card-text>
+          <div class="text-h5 pa-12">{{ dialogContent }}</div>
+        </v-card-text>
+        <v-card-actions class="justify-end">
+          <v-btn text @click="closeDialog">Close</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- 新規投稿フォーム -->
+    <v-dialog v-model="formVisible" max-width="600">
+      <v-card>
+        <v-toolbar color="#db7093" dark>新しい投稿</v-toolbar>
+        <v-card-text>
+          <v-form @submit.prevent="addNewPost">
+            <v-text-field v-model="newItem.name" label="Name"></v-text-field>
+            <v-text-field v-model="newItem.description" label="Description"></v-text-field>
+            <v-text-field v-model="newItem.note" label="Memo"></v-text-field>
+            <v-textarea v-model="newItem.overlayDesign" label="Overlay Design"></v-textarea>
+            <v-btn type="submit" color="#ffc0cb">投稿する</v-btn>
+          </v-form>
+        </v-card-text>
+        <v-card-actions class="justify-end">
+          <v-btn text @click="closeForm">Close</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- 編集用フォーム -->
+    <v-dialog v-model="editFormVisible" max-width="600">
+      <v-card>
+        <v-toolbar color="#db7093" dark>カードを編集する</v-toolbar>
+        <v-card-text>
+          <v-form @submit.prevent="saveEditedCard">
+            <v-text-field v-model="editedItem.name" label="Name"></v-text-field>
+            <v-text-field v-model="editedItem.description" label="Description"></v-text-field>
+            <v-text-field v-model="editedItem.note" label="Memo"></v-text-field>
+            <v-textarea v-model="editedItem.overlayDesign" label="Overlay Design"></v-textarea>
+            <v-btn type="submit" color="#ffc0cb">保存する</v-btn>
+          </v-form>
+        </v-card-text>
+        <v-card-actions class="justify-end">
+          <v-btn text @click="closeEditForm">Close</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+   
+
   </v-app>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+<script src="app.js"></script>
 <!-- partial -->
   <script src='https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.11/vue.min.js'></script>
 <script src='https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js'></script><script  src="./script.js"></script>
