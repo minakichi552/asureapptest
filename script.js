@@ -19,19 +19,13 @@ new Vue({
           メモ: '◎',
           overlayDesign: 'a:<a :href="キー名"></a>'
         },
-        {
-          name: 'v-show',
-          説明: 'みせる',
-          省略: 9.0,
-          メモ: 'v-showの使用例です。',
-          overlayDesign: 'うさぎ'
-        },
+       
         {
           name: 'v-if/v-else/v-else-if',
-          説明: 'つながり',
-          省略: ':',
-          メモ: 'v-bindの使用例です。',
-          overlayDesign: 'くま'
+          説明: '真偽値で左右',
+          省略: '',
+          メモ: '◎',
+          overlayDesign: '<div v-if="jsでの変数 == `条件値`"></div>他：v-ifと紐づけて使用'
         },
         {
           name: 'v-for',
@@ -45,7 +39,7 @@ new Vue({
           説明: 'html表記での表示/入力したままの表示',
           省略: 'なし',
           メモ: '◎',
-          overlayDesign: 'ここに使用コードをかきますよー'
+          overlayDesign: 'コードは省略'
         },
         {
           name: 'v-cloak',
@@ -56,10 +50,10 @@ new Vue({
         },
         {
           name: 'v-on',
-          説明: '@',
-          省略: ':',
-          メモ: 'v-bindの使用例です。',
-          overlayDesign: 'くま'
+          説明: 'イベント',
+          省略: '@',
+          メモ: '△',
+          overlayDesign: '<button v-on:click="jsで使用名">内容</button>js：methods内に記載'
         },
       ],
       dialogVisible: false,
